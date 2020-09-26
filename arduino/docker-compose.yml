@@ -1,0 +1,7 @@
+version: "3.6"
+services: 
+    cpputest:
+        build: ./arduinoLeonardoTerminalTest
+        volumes:
+            - .:/home/src
+        working_dir: /home/src/arduinoLeonardoTerminalTest
