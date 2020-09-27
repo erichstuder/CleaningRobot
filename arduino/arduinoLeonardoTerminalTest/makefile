@@ -38,10 +38,6 @@ SRC_DIRS += ../arduinoLeonardoTerminal
 
 TEST_SRC_FILES += 
 TEST_SRC_DIRS += ./
-#TEST_SRC_DIRS += tests
-#TEST_SRC_DIRS += tests/io-cppumock
-#	tests/example-fff \
-#	tests/fff \
 
 # --- MOCKS_SRC_DIRS ---
 # MOCKS_SRC_DIRS specifies a directories where you can put your
@@ -56,11 +52,8 @@ CPPUTEST_USE_EXTENSIONS = Y
 # containing directory
 INCLUDE_DIRS += $(CPPUTEST_HOME)/include
 INCLUDE_DIRS += $(CPPUTEST_HOME)/include/Platforms/Gcc
-#INCLUDE_DIRS += example-include
-#INCLUDE_DIRS += example-fff
-#INCLUDE_DIRS += tests/exploding-fakes
-#INCLUDE_DIRS += tests/fff
 INCLUDE_DIRS += TestDoubles
+INCLUDE_DIRS += ../arduinoLeonardoTerminal
 
 
 # --- CPPUTEST_OBJS_DIR ---

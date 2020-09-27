@@ -4,12 +4,9 @@
 #include "Arduino.h"
 #include <string.h>
 
-//#include "app.h"
+#include "app.h"
 
 HardwareSerial Serial;
-
-extern void setup_ForCppUTest(void);
-extern void loop(void);
 
 static void expectInputString(const char* str);
 static void expectNoInputLeft(void);
@@ -40,7 +37,7 @@ int analogRead(uint8_t pin) {
 TEST_GROUP(ArduinoLeonardoTerminalTest) {
 	void setup() {
 		mock().strictOrder();
-		setup_ForCppUTest();
+		appSetup();
 	}
 
 	void teardown() {
@@ -55,7 +52,7 @@ TEST(ArduinoLeonardoTerminalTest, turnLedOn) {
 	expectNoInputLeft();
 
 	for (int n = 0; n < 11; n++) {
-		loop();
+		appLoop();
 	}
 	
 }
@@ -66,7 +63,7 @@ TEST(ArduinoLeonardoTerminalTest, turnLedOff) {
 	expectNoInputLeft();
 
 	for (int n = 0; n < 12; n++) {
-		loop();
+		appLoop();
 	}
 }
 
@@ -76,7 +73,7 @@ TEST(ArduinoLeonardoTerminalTest, getAdcA0) {
 	expectNoInputLeft();
 
 	for (int n = 0; n < 12; n++) {
-		loop();
+		appLoop();
 	}
 }
 
