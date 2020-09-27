@@ -20,20 +20,15 @@ void appSetup(void) {
 }
 
 void appLoop(void) {
-	//if(Serial){
-		//while(true){
-			int incomingInt = Serial.read();
-			char incomingChar = (char)incomingInt;
-			if(incomingChar == Terminator) {
-				appendToInputBuffer('\0');
-				handleInput();
-				//delay(10);
-			}
-			else if(incomingInt != -1) {
-				appendToInputBuffer(incomingChar);
-			}
-		//}
-	//}
+	int incomingInt = Serial.read();
+	char incomingChar = (char)incomingInt;
+	if(incomingChar == Terminator) {
+		appendToInputBuffer('\0');
+		handleInput();
+	}
+	else if(incomingInt != -1) {
+		appendToInputBuffer(incomingChar);
+	}
 }
 
 static inline void handleInput(void) {
@@ -43,48 +38,27 @@ static inline void handleInput(void) {
 	else if(strcmp(inputBuffer, "setLedOff") == 0){
 		setLedOff();
 	}
-	else if(strcmp(inputBuffer, "getAdc_A0") == 0){
+	/*else if(strcmp(inputBuffer, "getAdc_A0") == 0){
 		char numberString[4+sizeof('\0')];
 		sprintf(numberString, "%d", analogRead(A0)); //TODO: sprintf hat einen Rückgabewert!
 		Serial.write(numberString);
 		Serial.write('\n');
-	}
+	}*/
 	inputBufferIndex = 0;
 }
 
 static inline void setLedOn(void) {
 	initLed();
-	digitalWrite(0, LOW);
-	digitalWrite(1, HIGH);
-	digitalWrite(2, LOW);
-	digitalWrite(3, HIGH);
-	digitalWrite(5, LOW);
-	digitalWrite(7, HIGH);
-	digitalWrite(9, LOW);
-	digitalWrite(11, HIGH);
+	digitalWrite(LED_BUILTIN, HIGH);
 }
 
 static inline void setLedOff(void) {
 	initLed();
-	digitalWrite(0, LOW);
-	digitalWrite(1, LOW);
-	digitalWrite(2, LOW);
-	digitalWrite(3, LOW);
-	digitalWrite(5, LOW);
-	digitalWrite(7, LOW);
-	digitalWrite(9, LOW);
-	digitalWrite(11, LOW);
+	digitalWrite(LED_BUILTIN, LOW);
 }
 
 static inline void initLed(void) {
-	pinMode(0, OUTPUT);
-	pinMode(1, OUTPUT);
-	pinMode(2, OUTPUT);
-	pinMode(3, OUTPUT);
-	pinMode(5, OUTPUT);
-	pinMode(7, OUTPUT);
-	pinMode(9, OUTPUT);
-	pinMode(11, OUTPUT);
+	pinMode(LED_BUILTIN, OUTPUT);
 }
 
 static inline void appendToInputBuffer(char ch) {
