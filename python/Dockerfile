@@ -1,0 +1,5 @@
+FROM python:3.8.6
+
+RUN pip3 install getkey
+
+WORKDIR /home/src

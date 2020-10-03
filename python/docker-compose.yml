@@ -1,0 +1,7 @@
+version: "3.6"
+services: 
+    python:
+        build: .
+        volumes:
+            - .:/home/src
+            - /dev/input:/dev/input
