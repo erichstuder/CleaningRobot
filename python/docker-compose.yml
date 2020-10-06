@@ -5,3 +5,5 @@ services:
         volumes:
             - .:/home/src
             - /dev/input:/dev/input
+        devices:
+            - "/dev/ttyACM0:/dev/ttyACM0"
