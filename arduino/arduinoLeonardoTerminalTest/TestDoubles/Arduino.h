@@ -49,3 +49,4 @@ extern HardwareSerial Serial;
 extern void pinMode(uint8_t pin, uint8_t value);
 extern void digitalWrite(uint8_t pin, uint8_t value);
 extern int analogRead(uint8_t pin);
+extern void analogWrite(uint8_t pin, uint8_t value);
