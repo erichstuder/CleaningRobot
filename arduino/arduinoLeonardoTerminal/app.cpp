@@ -6,8 +6,8 @@
 #define LED_BUILTIN 13
 
 typedef enum {
-  Forward,
-  Backward
+	Forward,
+	Backward
 } Direction_t;
 
 static const char Terminator = '\r';
