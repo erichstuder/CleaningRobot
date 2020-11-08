@@ -7,3 +7,4 @@ services:
             - /dev/input:/dev/input
         devices:
             - "/dev/ttyACM0:/dev/ttyACM0"
+            - "/dev/input/event5:/dev/input/event5"
