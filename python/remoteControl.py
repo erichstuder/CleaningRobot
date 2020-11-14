@@ -2,6 +2,7 @@ import time
 import serial
 from evdev import Device
 import arduino
+import controlPad as gamePad
 
 def main():
     print("letse goo")
@@ -19,7 +20,15 @@ def main():
     mySerial.port = arduinos[0].device_node
     mySerial.open()
 
-    controlPad = Device("/dev/input/event5")
+    controlPads = gamePad.getDevices()
+    if len(controlPads) == 0:
+        print("no control pad found!")
+        return
+    if len(controlPads) != 1:
+        print("more than one control pad found!")
+        return
+
+    controlPad = Device(controlPads[0].device_node)
 
     while not mySerial.is_open:
         pass
