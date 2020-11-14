@@ -1,13 +1,22 @@
-from getkey import getkey, keys
 import time
 import serial
 from evdev import Device
+import arduino
 
 def main():
     print("letse goo")
+
+    arduinos = arduino.getDevices()
+    if len(arduinos) == 0:
+        print("no Arduino found!")
+        return
+    if len(arduinos) != 1:
+        print("more than one Arduino found!")
+        return
+
     mySerial = serial.Serial(None)
     mySerial.timeout = 0
-    mySerial.port = "/dev/ttyACM0"
+    mySerial.port = arduinos[0].device_node
     mySerial.open()
 
     controlPad = Device("/dev/input/event5")

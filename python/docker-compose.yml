@@ -6,3 +6,4 @@ services:
         volumes:
             - .:/home/src
             - /dev/input:/dev/input
+            - /run/udev:/run/udev
