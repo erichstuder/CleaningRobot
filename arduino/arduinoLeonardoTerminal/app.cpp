@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "quadratureEncoder.h"
 #include "src/IT_Server/IT_Server/it.h"
+#include "quadratureEncoder.h"
+#include "motorCurrent.h"
+
 
 // static inline void handleInput(void);
 // static inline bool charArrayBeginsWith(const char* array, const char* begin);
@@ -46,6 +48,18 @@ static ItSignal_t itSignals[] = {
 		"enc2",
 		ItValueType_Ulong,
 		(void (*)(void)) quadratureEncoder_getCounts_2,
+		NULL,
+	},
+	{
+		"current1",
+		ItValueType_Float,
+		(void (*)(void)) getMotorCurrent_1,
+		NULL,
+	},
+	{
+		"current2",
+		ItValueType_Float,
+		(void (*)(void)) getMotorCurrent_2,
 		NULL,
 	},
 	{
