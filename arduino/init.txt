@@ -1,0 +1,6 @@
+set connectionType USB_RS232
+set VID 2341
+set PID 8036
+reset
+log enc1
+log enc2
