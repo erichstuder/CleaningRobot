@@ -6,6 +6,7 @@
 #include "src/IT_Server/IT_Server/it.h"
 #include "quadratureEncoder.h"
 #include "motorCurrent.h"
+#include "motorSpeed.h"
 
 
 // static inline void handleInput(void);
@@ -31,6 +32,9 @@ static inline void sendBufferToUart(void);
 
 static inline void setBuiltinLedOn(void);
 static inline void setBuiltinLedOff(void);
+
+static inline float getSpeed_1(void);
+static inline float getSpeed_2(void);
 
 // typedef enum {
 // 	Forward,
@@ -63,6 +67,18 @@ static ItSignal_t itSignals[] = {
 		NULL,
 	},
 	{
+		"speed1",
+		ItValueType_Float,
+		(void (*)(void)) getSpeed_1,
+		NULL,
+	},
+	{
+		"speed2",
+		ItValueType_Float,
+		(void (*)(void)) getSpeed_2,
+		NULL,
+	},
+	{
 		"sampleTime_us",
 		ItValueType_Ulong,
 		(void (*)(void)) getSampleTimeMicros,
@@ -79,8 +95,13 @@ static char itInputBuffer[30];
 static bool timerEvent = false;
 static unsigned long sampleTimeMicros;
 static unsigned long tickMicros = 0;
+static unsigned long oldTickMicros = 0;
+static float deltaTime;
 
 static const unsigned char OnBoardLedPin = 13;
+
+float speed_1;
+float speed_2;
 
 // static const char Terminator = '\r';
 // static char inputBuffer[100];
@@ -101,11 +122,15 @@ void appSetup(void) {
 	itParameters.itSignalCount = ItSignalCount;
 	itInit(&itParameters, &itCallbacks);
 
-	sampleTimeMicros = 1e5;
+	sampleTimeMicros = 0.2e6;
 	timerSetup(sampleTimeMicros);
 
 	//inputBufferIndex = 0;
 	quadratureEncoder_init();
+	initMotorAngularSpeed();
+
+	speed_1 = 0;
+	speed_2 = 0;
 }
 
 void appLoop(void) {
@@ -115,8 +140,17 @@ void appLoop(void) {
 	}
 	setBuiltinLedOn();
 	timerEvent=false;
+
+	unsigned long tickTemp = getTickMicros();
+	deltaTime = (float)(tickTemp - oldTickMicros) / 1.0e6f;
+	oldTickMicros = tickTemp;
+	speed_1 = getMotorAngularSpeed_1(deltaTime);
+	speed_2 = getMotorAngularSpeed_2(deltaTime);
+
 	itTick();
 	sendBufferToUart();
+
+
 	
 	/*int incomingInt = Serial.read();
 	char incomingChar = (char)incomingInt;
@@ -145,6 +179,14 @@ static inline void setBuiltinLedOn(void){
 static inline void setBuiltinLedOff(void){
 	initBuiltinLed();
 	digitalWrite(OnBoardLedPin, LOW);
+}
+
+static inline float getSpeed_1(void){
+	return speed_1;
+}
+
+static inline float getSpeed_2(void){
+	return speed_2;
 }
 
 static inline unsigned long getSampleTimeMicros(void){

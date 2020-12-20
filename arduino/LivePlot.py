@@ -25,6 +25,7 @@ import sys
 
 from IT_Client.helpers.TelegramParser import TelegramParser
 
+
 if sys.platform.startswith("win"):
     os.system('mode 70,15')
     os.system("title LivePlot")
@@ -33,58 +34,55 @@ plt.style.use('dark_background')
 
 print("Starting up, may take a few seconds ...")
 
-voltage_borderTimestamp = 0
+timeWindow = 10e6
 
-voltage_telegrams = []
+signals = [
+	#{"name": "enc1",   "lastTelegramTimestamp": 0, "data": [], "time": []},
+	{"name": "speed1", "lastTelegramTimestamp": 0, "data": [], "time": []},
+	{"name": "speed2", "lastTelegramTimestamp": 0, "data": [], "time": []},
+]
 
-voltage_lastTelegramTimestamp_old = 0
+figure = plt.figure(num="LivePlot", figsize=(8, 4))
 
-voltage_data = []
+try:
+	while True:
+		with open("mySession.session", "rb") as sessionFile:
+			data = sessionFile.read()
 
-voltage_time = []
+		plt.clf()
 
-timeWindow = 30e6
+		borderTimestamp = 0
+		telegrams = []
 
-while True:
-	#millis1 = int(round(time.time() * 1000))
-	
-	with open('mySession.session', 'rb') as sessionFile:
-		data = sessionFile.read()
+		for signal in signals:
+			lastTelegram = TelegramParser.parseLastValidTelegram(data, signal["name"])
+			lastTelegramTimestamp = lastTelegram["timestamp"]
+			borderTimestamp = max(signal["lastTelegramTimestamp"], lastTelegramTimestamp - timeWindow)
+			signal["lastTelegramTimestamp"] = lastTelegramTimestamp
+			telegrams = TelegramParser.getTelegramsAfterTimestamp(data, signal["name"], borderTimestamp)
+			if telegrams == None:
+				continue
 
-	#print(data)
+			for telegram in telegrams:
+				if "value" in telegram and "timestamp" in telegram:
+					signal["data"] += [telegram["value"]]
+					signal["time"] += [telegram["timestamp"]]
 
-	voltage_lastTelegram = TelegramParser.parseLastValidTelegram(data, "enc1")
-	
-	voltage_lastTelegramTimestamp = voltage_lastTelegram["timestamp"]
-	voltage_borderTimestamp = max(voltage_lastTelegramTimestamp_old, voltage_lastTelegramTimestamp - timeWindow)
-	voltage_lastTelegramTimestamp_old = voltage_lastTelegramTimestamp
-	
-	voltage_telegrams = TelegramParser.getTelegramsAfterTimestamp(data, "enc1", voltage_borderTimestamp)
-	#print(voltage_telegrams)
+			for index in range(len(signal["time"])):
+				if signal["time"][index] > lastTelegramTimestamp - timeWindow:
+					del signal["data"][0:max(index-1,0)]
+					del signal["time"][0:max(index-1,0)]
+					break
 
-	if voltage_telegrams == None:
-		continue
+			timeSeconds = [x/1e6 for x in signal["time"]]
+			plt.step(timeSeconds, signal["data"], where="post")
 
-	for telegram in voltage_telegrams:
-		if 'value' in telegram and 'timestamp' in telegram:
-			voltage_data += [telegram['value']]
-			voltage_time += [telegram['timestamp']]
-	
-	for index in range(len(voltage_time)):
-		if voltage_time[index] > voltage_lastTelegramTimestamp - timeWindow:
-			del voltage_data[0:max(index-1,0)]
-			del voltage_time[0:max(index-1,0)]
-			break
-	
-	figure = plt.figure(num='LivePlot', figsize=(8, 4))
-	voltage_timeSeconds = [x/1e6 for x in voltage_time]
-	
-	plt.clf()
-	plt.step(voltage_timeSeconds, voltage_data, where='post')
+		#plt.legend(signalNames, loc="lower left")
+		plt.xlabel("time [s]")
 
-	plt.legend(['enc1'], loc='lower left')
-	plt.xlabel('time [s]')
-	
-	plt.grid(linestyle='--')
+		plt.grid(linestyle="--")
 
-	figure.canvas.flush_events()
+		figure.canvas.flush_events()
+except Exception as e:
+	print(e)
+	print("good bye")
