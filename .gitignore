@@ -1,3 +1,4 @@
 .~lock.*.odg#
 *.swp
 __pycache__
+*.session
