@@ -1,6 +1,6 @@
-[submodule "arduino/arduinoLeonardoTerminal/src/IT_Server"]
-	path = arduino/arduinoLeonardoTerminal/src/IT_Server
+[submodule "firmware/firmware/src/IT_Server"]
+	path = firmware/firmware/src/IT_Server
 	url = https://github.com/erichstuder/IT_Server.git
-[submodule "arduino/IT_Client"]
-	path = arduino/IT_Client
+[submodule "firmware/IT_Client"]
+	path = firmware/IT_Client
 	url = https://github.com/erichstuder/IT_Client.git

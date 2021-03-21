@@ -5,19 +5,16 @@
 
 #include "src/IT_Server/IT_Server/it.h"
 #include "quadratureEncoder.h"
-#include "motorCurrent.h"
+#include "motorPower.h"
 #include "motorSpeed.h"
+#include "speedController.h"
+
 
 
 // static inline void handleInput(void);
 // static inline bool charArrayBeginsWith(const char* array, const char* begin);
 // static inline void setLedOn(void);
 // static inline void setLedOff(void);
-// static inline void setMotorA(float value);
-// static inline void setMotorB(float value);
-// static inline void disengageBreakOnPin(int pin);
-// static inline void setDirectionOnPin(int pin, Direction_t direction);
-// static inline void setPwmOnPin(int pin, float ratio);
 // static inline void initLed(void);
 // static inline void appendToInputBuffer(char ch);
 static inline unsigned long getSampleTimeMicros(void);
@@ -33,15 +30,53 @@ static inline void sendBufferToUart(void);
 static inline void setBuiltinLedOn(void);
 static inline void setBuiltinLedOff(void);
 
+static inline uint8_t getExternalMode(void);
+static inline void setExternalMode(uint8_t value);
+
+static inline float getBothPwm(void);
+static inline void setBothPwm(float value);
+
 static inline float getSpeed_1(void);
 static inline float getSpeed_2(void);
 
-// typedef enum {
-// 	Forward,
-// 	Backward
-// } Direction_t;
+static inline void setDesiredSpeed(float value);
+
+
+
+
+static bool timerEvent = false;
+static unsigned long sampleTimeMicros;
+static unsigned long tickMicros = 0;
+static unsigned long oldTickMicros = 0;
+static float deltaTime;
+
+static const unsigned char OnBoardLedPin = 13;
+
+static bool externalMode = false;
+
+static float bothPwm;
+static float speed_1;
+static float speed_2;
+
+static float speedSetValue = 0;
+
+// static const char Terminator = '\r';
+// static char inputBuffer[100];
+// static unsigned char inputBufferIndex;
 
 static ItSignal_t itSignals[] = {
+	{
+		"extMode",
+		ItValueType_Uint8,
+		[]()->uint8_t{return (uint8_t)externalMode;},
+		(void (*)(void)) setExternalMode,
+	},
+	{
+		"bothPwm",
+		ItValueType_Float,
+		[]()->float{return bothPwm;},
+		(void (*)(void)) setBothPwm,
+	},
 	{
 		"enc1",
 		ItValueType_Ulong,
@@ -55,28 +90,22 @@ static ItSignal_t itSignals[] = {
 		NULL,
 	},
 	{
-		"current1",
-		ItValueType_Float,
-		(void (*)(void)) getMotorCurrent_1,
-		NULL,
-	},
-	{
-		"current2",
-		ItValueType_Float,
-		(void (*)(void)) getMotorCurrent_2,
-		NULL,
-	},
-	{
 		"speed1",
 		ItValueType_Float,
-		(void (*)(void)) getSpeed_1,
-		NULL,
+		[]()->float{return speed_1;},
+		[](float value)->float{speedSetValue = value;},
 	},
 	{
 		"speed2",
 		ItValueType_Float,
-		(void (*)(void)) getSpeed_2,
+		[]()->float{return speed_2;},
 		NULL,
+	},
+	{
+		"i",
+		ItValueType_Float,
+		(void (*)(void)) getSpeedControl_I,
+		(void (*)(void)) setSpeedControl_I,
 	},
 	{
 		"sampleTime_us",
@@ -86,27 +115,12 @@ static ItSignal_t itSignals[] = {
 	},
 };
 
+
 static unsigned char outBuffer[1024];
 static unsigned short outBufferIndex = 0;
 
 static const unsigned char ItSignalCount = sizeof(itSignals) / sizeof(itSignals[0]);
 static char itInputBuffer[30];
-
-static bool timerEvent = false;
-static unsigned long sampleTimeMicros;
-static unsigned long tickMicros = 0;
-static unsigned long oldTickMicros = 0;
-static float deltaTime;
-
-static const unsigned char OnBoardLedPin = 13;
-
-float speed_1;
-float speed_2;
-
-// static const char Terminator = '\r';
-// static char inputBuffer[100];
-// static unsigned char inputBufferIndex;
-
 
 
 void appSetup(void) {
@@ -122,11 +136,12 @@ void appSetup(void) {
 	itParameters.itSignalCount = ItSignalCount;
 	itInit(&itParameters, &itCallbacks);
 
-	sampleTimeMicros = 0.2e6;
+	sampleTimeMicros = 0.01e6;
 	timerSetup(sampleTimeMicros);
 
 	//inputBufferIndex = 0;
 	quadratureEncoder_init();
+	initMotorPower(((float)sampleTimeMicros)/1e6f);
 	initMotorAngularSpeed();
 
 	speed_1 = 0;
@@ -135,23 +150,30 @@ void appSetup(void) {
 
 void appLoop(void) {
 	if(!timerEvent){
-		setBuiltinLedOff();
+		//setBuiltinLedOff();
 		return;
 	}
-	setBuiltinLedOn();
+	//setBuiltinLedOn();
 	timerEvent=false;
 
-	unsigned long tickTemp = getTickMicros();
-	deltaTime = (float)(tickTemp - oldTickMicros) / 1.0e6f;
-	oldTickMicros = tickTemp;
 	speed_1 = getMotorAngularSpeed_1(deltaTime);
 	speed_2 = getMotorAngularSpeed_2(deltaTime);
+
+	if(externalMode){
+		//nothing to do
+	}
+	else{
+		unsigned long tickTemp = getTickMicros();
+		deltaTime = (float)(tickTemp - oldTickMicros) / 1.0e6f;
+		oldTickMicros = tickTemp;
+
+		float controlValue = doSpeedControl(speedSetValue, speed_1, deltaTime);
+		///setPowerMotorA(controlValue);
+	}
 
 	itTick();
 	sendBufferToUart();
 
-
-	
 	/*int incomingInt = Serial.read();
 	char incomingChar = (char)incomingInt;
 	if(incomingChar == Terminator) {
@@ -161,6 +183,20 @@ void appLoop(void) {
 	else if(incomingInt != -1) {
 		appendToInputBuffer(incomingChar);
 	}*/
+}
+
+static inline void setExternalMode(uint8_t value){
+	externalMode = (bool)value;
+	if(externalMode){
+		///setPowerMotorA(0);
+		///setPowerMotorB(0);
+	}
+}
+
+static inline void setBothPwm(float value){
+	///setPowerMotorA(value);
+	///setPowerMotorB(value);
+	bothPwm = value;
 }
 
 static inline unsigned long getTickMicros(void){
@@ -179,14 +215,6 @@ static inline void setBuiltinLedOn(void){
 static inline void setBuiltinLedOff(void){
 	initBuiltinLed();
 	digitalWrite(OnBoardLedPin, LOW);
-}
-
-static inline float getSpeed_1(void){
-	return speed_1;
-}
-
-static inline float getSpeed_2(void){
-	return speed_2;
 }
 
 static inline unsigned long getSampleTimeMicros(void){
@@ -304,50 +332,6 @@ static inline void sendBufferToUart(void){
 // static inline void setLedOff(void) {
 // 	initLed();
 // 	digitalWrite(LED_BUILTIN, LOW);
-// }
-
-// static inline void setMotorA(float value) {
-// 	disengageBreakOnPin(9);
-// 	const int DirectionPin = 12;
-// 	if(value > 0) {
-// 		setDirectionOnPin(DirectionPin, Forward);  
-// 	}
-// 	else {
-// 		setDirectionOnPin(DirectionPin, Backward);
-// 	}
-// 	setPwmOnPin(3, abs(value));
-// }
-
-// static inline void setMotorB(float value) {
-// 	disengageBreakOnPin(8);
-// 	const int DirectionPin = 13;
-// 	if(value > 0) {
-// 		setDirectionOnPin(DirectionPin, Forward);  
-// 	}
-// 	else {
-// 		setDirectionOnPin(DirectionPin, Backward);
-// 	}
-// 	setPwmOnPin(11, abs(value));
-// }
-
-// static inline void disengageBreakOnPin(int pin) {
-// 	pinMode(pin, OUTPUT);
-// 	digitalWrite(pin, LOW);
-// }
-
-// static inline void setDirectionOnPin(int pin, Direction_t direction) {
-// 	pinMode(pin, OUTPUT);
-// 	if(direction == Forward) {
-// 		digitalWrite(pin, HIGH);
-// 	}
-// 	else {
-// 		digitalWrite(pin, LOW);
-// 	}
-// }
-
-// static inline void setPwmOnPin(int pin, float ratio) {
-// 	pinMode(pin, OUTPUT);
-// 	analogWrite(pin, int(ratio*255.0f));
 // }
 
 // static inline void initLed(void) {

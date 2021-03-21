@@ -1,0 +1,16 @@
+Projektstruktur
+
+- root
+  - readme (file)
+  - makeAll (file, kompletter build mit allen Tests)
+  - firmware (folder)
+  - electronics (folder)
+  - mechanics (folder)
+  - startRemoteControl (file)
+  - remoteControl (folder)
+
+
+das muss ich verpacken:
+- it handling
+- unit tests
+- build

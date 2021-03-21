@@ -38,8 +38,10 @@ timeWindow = 10e6
 
 signals = [
 	#{"name": "enc1",   "lastTelegramTimestamp": 0, "data": [], "time": []},
+	#{"name": "enc2",   "lastTelegramTimestamp": 0, "data": [], "time": []},
 	{"name": "speed1", "lastTelegramTimestamp": 0, "data": [], "time": []},
 	{"name": "speed2", "lastTelegramTimestamp": 0, "data": [], "time": []},
+	#{"name": "current1", "lastTelegramTimestamp": 0, "data": [], "time": []},
 ]
 
 figure = plt.figure(num="LivePlot", figsize=(8, 4))

@@ -99,11 +99,11 @@ static inline void attachToInterrupts(Encoder* encoder){
 static inline void A_falling(Encoder* encoder){
 	detachInterrupt(encoder->A_InterruptId);
 	if(digitalRead(encoder->B_Pin) == HIGH){
-		oneStepForward(encoder);
+		oneStepBackward(encoder);
 		attachInterrupt(encoder->B_InterruptId, encoder->B_fallingClb, FALLING);
 	}
 	else{
-		oneStepBackward(encoder);
+		oneStepForward(encoder);
 		attachInterrupt(encoder->B_InterruptId, encoder->B_risingClb, RISING);
 	}
 }
@@ -111,11 +111,11 @@ static inline void A_falling(Encoder* encoder){
 static inline void A_rising(Encoder* encoder){
 	detachInterrupt(encoder->A_InterruptId);
 	if(digitalRead(encoder->B_Pin) == HIGH){
-		oneStepBackward(encoder);
+		oneStepForward(encoder);
 		attachInterrupt(encoder->B_InterruptId, encoder->B_fallingClb, FALLING);
 	}
 	else{
-		oneStepForward(encoder);
+		oneStepBackward(encoder);
 		attachInterrupt(encoder->B_InterruptId, encoder->B_risingClb, RISING);
 	}
 }
@@ -123,11 +123,11 @@ static inline void A_rising(Encoder* encoder){
 static inline void B_falling(Encoder* encoder){
 	detachInterrupt(encoder->B_InterruptId);
 	if(digitalRead(encoder->A_Pin) == HIGH){
-		oneStepBackward(encoder);
+		oneStepForward(encoder);
 		attachInterrupt(encoder->A_InterruptId, encoder->A_fallingClb, FALLING);
 	}
 	else{
-		oneStepForward(encoder);
+		oneStepBackward(encoder);
 		attachInterrupt(encoder->A_InterruptId, encoder->A_risingClb, RISING);
 	}
 }
@@ -135,11 +135,11 @@ static inline void B_falling(Encoder* encoder){
 static inline void B_rising(Encoder* encoder){
 	detachInterrupt(encoder->B_InterruptId);
 	if(digitalRead(encoder->A_Pin) == HIGH){
-		oneStepForward(encoder);
+		oneStepBackward(encoder);
 		attachInterrupt(encoder->A_InterruptId, encoder->A_fallingClb, FALLING);
 	}
 	else{
-		oneStepBackward(encoder);
+		oneStepForward(encoder);
 		attachInterrupt(encoder->A_InterruptId, encoder->A_risingClb, RISING);
 	}
 }
