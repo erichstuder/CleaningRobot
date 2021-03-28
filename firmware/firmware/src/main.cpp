@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <it.h>
+#include "itHandler.h"
 #include "quadratureEncoder.h"
 #include "motorPower.h"
 #include "motorSpeed.h"
@@ -21,24 +21,21 @@ static inline void setSampleTimeMicros(unsigned long);
 static inline void timerSetup(unsigned long sampleTime_us);
 static inline unsigned long getTickMicros(void);
 
-static inline bool byteFromUartAvailable(void);
-static inline ItError_t readByteFromUart(char* const data);
-static inline ItError_t writeByteToUart(const unsigned char data);
-static inline void sendBufferToUart(void);
+
 
 static inline void setBuiltinLedOn(void);
 static inline void setBuiltinLedOff(void);
 
-static inline uint8_t getExternalMode(void);
+//static inline uint8_t getExternalMode(void);
 static inline void setExternalMode(uint8_t value);
 
-static inline float getBothPwm(void);
+//static inline float getBothPwm(void);
 static inline void setBothPwm(float value);
 
-static inline float getSpeed_1(void);
-static inline float getSpeed_2(void);
+//static inline float getSpeed_1(void);
+//static inline float getSpeed_2(void);
 
-static inline void setDesiredSpeed(float value);
+//static inline void setDesiredSpeed(float value);
 
 
 
@@ -64,7 +61,7 @@ static float speedSetValue = 0;
 // static unsigned char inputBufferIndex;
 
 static ItSignal_t itSignals[] = {
-	{
+	/*{
 		"extMode",
 		ItValueType_Uint8,
 		[]()->uint8_t{return (uint8_t)externalMode;},
@@ -75,7 +72,7 @@ static ItSignal_t itSignals[] = {
 		ItValueType_Float,
 		[]()->float{return bothPwm;},
 		(void (*)(void)) setBothPwm,
-	},
+	},*/
 	{
 		"enc1",
 		ItValueType_Ulong,
@@ -88,18 +85,18 @@ static ItSignal_t itSignals[] = {
 		(void (*)(void)) quadratureEncoder_getCounts_2,
 		NULL,
 	},
-	{
+	/*{
 		"speed1",
 		ItValueType_Float,
 		[]()->float{return speed_1;},
-		[](float value)->float{speedSetValue = value;},
+		[](float value)->float{speedSetValue = value; return 0;},
 	},
 	{
 		"speed2",
 		ItValueType_Float,
 		[]()->float{return speed_2;},
 		NULL,
-	},
+	},*/
 	{
 		"i",
 		ItValueType_Float,
@@ -115,25 +112,24 @@ static ItSignal_t itSignals[] = {
 };
 
 
-static unsigned char outBuffer[1024];
-static unsigned short outBufferIndex = 0;
+
 
 static const unsigned char ItSignalCount = sizeof(itSignals) / sizeof(itSignals[0]);
-static char itInputBuffer[30];
 
 
 void setup(void) {
-	ItCallbacks_t itCallbacks;
-	itCallbacks.byteFromClientAvailable = byteFromUartAvailable;
-	itCallbacks.readByteFromClient = readByteFromUart;
-	itCallbacks.writeByteToClient = writeByteToUart;
-	itCallbacks.getTimestamp = getTickMicros;
-	ItParameters_t itParameters;
-	itParameters.itInputBuffer = itInputBuffer;
-	itParameters.itInputBufferSize = sizeof(itInputBuffer)/sizeof(itInputBuffer[0]);
-	itParameters.itSignals = itSignals;
-	itParameters.itSignalCount = ItSignalCount;
-	itInit(&itParameters, &itCallbacks);
+	//ItCallbacks_t itCallbacks;
+	//itCallbacks.byteFromClientAvailable = byteFromUartAvailable;
+	//itCallbacks.readByteFromClient = readByteFromUart;
+	//itCallbacks.writeByteToClient = writeByteToUart;
+	//itCallbacks.getTimestamp = getTickMicros;
+	//ItParameters_t itParameters;
+	//itParameters.itInputBuffer = itInputBuffer;
+	//itParameters.itInputBufferSize = sizeof(itInputBuffer)/sizeof(itInputBuffer[0]);
+	//itParameters.itSignals = itSignals;
+	//itParameters.itSignalCount = ItSignalCount;
+	//itInit(&itParameters, &itCallbacks);
+	itHandlerInit(getTickMicros, itSignals, ItSignalCount);
 
 	sampleTimeMicros = 0.01e6;
 	timerSetup(sampleTimeMicros);
@@ -166,12 +162,11 @@ void loop(void) {
 		deltaTime = (float)(tickTemp - oldTickMicros) / 1.0e6f;
 		oldTickMicros = tickTemp;
 
-		float controlValue = doSpeedControl(speedSetValue, speed_1, deltaTime);
+		/*float controlValue = */doSpeedControl(speedSetValue, speed_1, deltaTime);
 		///setPowerMotorA(controlValue);
 	}
 
-	itTick();
-	sendBufferToUart();
+	itHandlerTick();
 
 	/*int incomingInt = Serial.read();
 	char incomingChar = (char)incomingInt;
@@ -265,35 +260,7 @@ ISR(TIMER1_COMPA_vect){
 	timerEvent = true;
 }
 
-static inline bool byteFromUartAvailable(void){
-	return Serial.available() > 0;
-}
 
-static inline ItError_t readByteFromUart(char* const data){
-	int incomingByte = Serial.read();
-	if(incomingByte == -1){
-		return ItError_NoDataAvailable;
-	}else{
-		*data = (char)incomingByte;
-	}
-	return ItError_NoError;
-}
-
-static inline ItError_t writeByteToUart(const unsigned char data){
-	if(outBufferIndex >= sizeof(outBuffer)){
-		sendBufferToUart();
-		if(outBufferIndex >= sizeof(outBuffer)){
-			return ItError_ClientWriteError;
-		}
-	}
-
-	outBuffer[outBufferIndex++] = data;
-	return ItError_NoError;
-}
-
-static inline void sendBufferToUart(void){
-	outBufferIndex -= Serial.write(outBuffer, outBufferIndex);
-}
 
 // static inline void handleInput(void) {
 // 	if(strcmp(inputBuffer, "setLedOn") == 0){
