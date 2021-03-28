@@ -94,18 +94,18 @@ static inline void setPwm(Motor* motor, float ratio){
 	analogWrite(pwmPin, int(ratio*255.0f));
 }
 
-float getMotorPower_GainP(void){
+float getMotorPower_gainP(void){
 	return gainP;
 }
 
-void setMotorPower_GainP(float value){
+void setMotorPower_gainP(float value){
 	gainP = value;
 }
 
-float getMotorPower_GainI(void){
+float getMotorPower_gainI(void){
 	return gainI;
 }
 
-void setMotorPower_GainI(float value){
+void setMotorPower_gainI(float value){
 	gainI = value;
 }

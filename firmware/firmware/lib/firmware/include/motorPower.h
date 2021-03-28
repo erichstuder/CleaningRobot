@@ -6,9 +6,9 @@ void setMotorPower_B(float ratio);
 
 void initMotorPower(float samplingtimeSeconds);
 
-float getMotorPower_GainP(void);
-void setMotorPower_GainP(float value);
-float getMotorPower_GainI(void);
-void setMotorPower_GainI(float value);
+float getMotorPower_gainP(void);
+void setMotorPower_gainP(float value);
+float getMotorPower_gainI(void);
+void setMotorPower_gainI(float value);
 
 #endif
