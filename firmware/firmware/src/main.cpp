@@ -1,9 +1,8 @@
-//board: Arduino Leonardo
 #include <Arduino.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "src/IT_Server/IT_Server/it.h"
+#include <it.h>
 #include "quadratureEncoder.h"
 #include "motorPower.h"
 #include "motorSpeed.h"
@@ -123,7 +122,7 @@ static const unsigned char ItSignalCount = sizeof(itSignals) / sizeof(itSignals[
 static char itInputBuffer[30];
 
 
-void appSetup(void) {
+void setup(void) {
 	ItCallbacks_t itCallbacks;
 	itCallbacks.byteFromClientAvailable = byteFromUartAvailable;
 	itCallbacks.readByteFromClient = readByteFromUart;
@@ -148,7 +147,7 @@ void appSetup(void) {
 	speed_2 = 0;
 }
 
-void appLoop(void) {
+void loop(void) {
 	if(!timerEvent){
 		//setBuiltinLedOff();
 		return;
