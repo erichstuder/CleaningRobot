@@ -3,6 +3,8 @@
 
 void initMotorPower(float samplingtimeSeconds);
 
+void motorPowerTick(void);
+
 void setMotorPower_A(float ratio);
 void setMotorPower_B(float ratio);
 

@@ -80,7 +80,7 @@ if __name__ == "__main__":
 						break
 
 				timeSeconds = [x/1e6 for x in signal["time"]]
-				plt.step(timeSeconds, signal["data"], where="post", marker="x")
+				plt.step(timeSeconds, signal["data"], where="post")
 
 			#plt.legend(signalNames, loc="lower left")
 			plt.xlabel("time [s]")

@@ -4,12 +4,12 @@ send("set PID 8036")
 send("reset")
 
 send("log driverCurrentA")
-send("directRatioMotorA")
+send("log directRatioMotorA")
 
 while True:
 	send("controlledRatioMotorA 1")
-	sleep(2)
-	send("controlledRatioMotorA 0.3")
+	sleep(5)
+	send("controlledRatioMotorA -1")
 	sleep(5)
 
 send("reset")

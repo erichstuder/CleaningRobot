@@ -78,6 +78,7 @@ void loop(void) {
 	}
 	lastMicros = currentMicros;
 	itHandlerTick();
+	motorPowerTick();
 }
 
 static unsigned long getMicros(void){
