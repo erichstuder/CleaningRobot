@@ -28,6 +28,8 @@ void initMotorPower(float samplingtimeSeconds){
 
 	gainP = 0;
 	gainI = 0;
+
+	initMotorInterface();
 }
 
 void setMotorPower_A(float ratio){

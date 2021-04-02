@@ -25,19 +25,25 @@ static ItSignal_t itSignals[] = {
 		"controlledRatioMotorA",
 		ItValueType_Float,
 		NULL,
-		(void (*)(void)) setMotorPower_B
+		(void (*)(void)) setMotorPower_A
 	},
 	{
 		"controlledRatioMotorB",
 		ItValueType_Float,
 		NULL,
 		(void (*)(void)) setMotorPower_B
-	}
+	},
 	{
 		"driverCurrentA",
 		ItValueType_Float,
-		NULL,
-		(void (*)(void)) setMotorPower_B
+		(void (*)(void)) getMotorDriverCurrent_A,
+		NULL
+	},
+	{
+		"driverCurrentB",
+		ItValueType_Float,
+		(void (*)(void)) getMotorDriverCurrent_B,
+		NULL
 	}
 };
 
@@ -45,15 +51,17 @@ static const unsigned char ItSignalCount = sizeof(itSignals) / sizeof(itSignals[
 
 static unsigned long currentMicros;
 static unsigned long lastMicros;
+static const unsigned long SamplingTimeMicros = 0.01e6;
 
 void setup(void) {
-	lastMicros = micros();
 	itHandlerInit(getMicros, itSignals, ItSignalCount);
+	initMotorPower(((float)SamplingTimeMicros)/1e6);
+	lastMicros = micros();
 }
 
 void loop(void) {
 	currentMicros = micros();
-	if(currentMicros - lastMicros < 0.01e6){
+	if(currentMicros - lastMicros < SamplingTimeMicros){
 		return;
 	}
 	lastMicros = currentMicros;
