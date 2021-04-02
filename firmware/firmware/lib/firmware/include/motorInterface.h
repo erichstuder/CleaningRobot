@@ -2,7 +2,9 @@
 #define MOTOR_INTERFACE_H
 
 void initMotorInterface(void);
-void setMotorInterface_A(float ratio);
-void setMotorInterface_B(float ratio);
+float getMotorInterface_ratioA(void);
+float getMotorInterface_ratioB(void);
+void setMotorInterface_ratioA(float ratio);
+void setMotorInterface_ratioB(float ratio);
 
 #endif

@@ -12,25 +12,25 @@ static ItSignal_t itSignals[] = {
 	{
 		"directRatioMotorA",
 		ItValueType_Float,
-		NULL,
-		(void (*)(void)) setMotorInterface_A
+		(void (*)(void)) getMotorInterface_ratioA,
+		(void (*)(void)) setMotorInterface_ratioA
 	},
 	{
 		"directRatioMotorB",
 		ItValueType_Float,
-		NULL,
-		(void (*)(void)) setMotorInterface_B
+		(void (*)(void)) getMotorInterface_ratioB,
+		(void (*)(void)) setMotorInterface_ratioB
 	},
 	{
 		"controlledRatioMotorA",
 		ItValueType_Float,
-		NULL,
+		(void (*)(void)) getMotorInterface_ratioA,
 		(void (*)(void)) setMotorPower_A
 	},
 	{
 		"controlledRatioMotorB",
 		ItValueType_Float,
-		NULL,
+		(void (*)(void)) getMotorInterface_ratioB,
 		(void (*)(void)) setMotorPower_B
 	},
 	{
@@ -44,6 +44,18 @@ static ItSignal_t itSignals[] = {
 		ItValueType_Float,
 		(void (*)(void)) getMotorDriverCurrent_B,
 		NULL
+	},
+	{
+		"p",
+		ItValueType_Float,
+		(void (*)(void)) getMotorPower_gainP,
+		(void (*)(void)) setMotorPower_gainP
+	},
+	{
+		"i",
+		ItValueType_Float,
+		(void (*)(void)) getMotorPower_gainI,
+		(void (*)(void)) setMotorPower_gainI
 	}
 };
 

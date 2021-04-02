@@ -26,7 +26,7 @@ void initMotorPower(float samplingtimeSeconds){
 	motorB.getMotorDriverCurrent = getMotorDriverCurrent_B;
 	motorB.controllerIntegralPart = 0;
 
-	gainP = 0;
+	gainP = 10;
 	gainI = 0;
 
 	initMotorInterface();
@@ -34,18 +34,18 @@ void initMotorPower(float samplingtimeSeconds){
 
 void setMotorPower_A(float ratio){
 	float ratioLimited = limitPwmRatio(&motorA, ratio);
-	setMotorInterface_A(ratioLimited);
+	setMotorInterface_ratioA(ratioLimited);
 }
 
 void setMotorPower_B(float ratio){
 	float ratioLimited = limitPwmRatio(&motorB, ratio);
-	setMotorInterface_B(ratioLimited);
+	setMotorInterface_ratioB(ratioLimited);
 }
 
 static inline float limitPwmRatio(Motor* motor, float ratio){
 	//TODO: if current is too high: set pwm to zero for 10 seconds and log that event
 
-	const float MaxCurrent = 0.1f;
+	const float MaxCurrent = 1.0f;
 
 	float current = motor->getMotorDriverCurrent();
 	float err = MaxCurrent - current;
