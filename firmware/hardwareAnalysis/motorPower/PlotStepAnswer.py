@@ -30,7 +30,7 @@ if __name__ == "__main__":
 	sys.path.append(os.path.abspath(os.path.join("../..")))
 	from IT_Client.helpers.TelegramParser import TelegramParser
 
-	signalNames = ["driverCurrentA"]
+	signalNames = ["driverCurrentA", "directRatioMotorA"]
 
 	if sys.platform.startswith("win"):
 		os.system('mode 70,15')
