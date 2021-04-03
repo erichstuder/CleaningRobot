@@ -6,13 +6,14 @@
 
 typedef struct {
 	float (*getMotorDriverCurrent)(void);
-	//float oldCurrent[10];
 	float controllerIntegralPart;
 	float ratioSet;
 	float ratioActual;
 } Motor;
 
 static inline float limitPwmRatio(Motor* motor);
+static inline float controlRatio(Motor* motor, float current, const float MaxCurrent);
+static inline float limitRatioChange(Motor* motor);
 
 static Motor motorA;
 static Motor motorB;
@@ -48,71 +49,29 @@ void motorPowerTick(void){
 }
 
 static inline float limitPwmRatio(Motor* motor){
-	//TODO: if current is too high: set pwm to zero for 10 seconds and log that event
-
 	//The actual 9V powersupply has 0.8A maximum output current.
 	//This results in 0.4A maximum current per motor.
 	const float MaxCurrent = 0.4;
-
-	float ratio = motor->ratioSet;
-
-	const float MaxChange = 0.5;
-	float ratioActual = motor->ratioActual;
-	if(ratio > 0 && ratioActual >= 0){
-		if(ratio < ratioActual){
-			//do nothing
-		}
-		else if(ratio > ratioActual + MaxChange){
-			ratio = ratioActual + MaxChange;
-		}
-		else{
-			//do nothing
-		}
-	}
-	else if(ratio < 0 && ratioActual <= 0){
-		if(ratio > ratioActual){
-			//do nothing
-		}
-		else if(ratio < ratioActual - MaxChange){
-			ratio= ratioActual - MaxChange;
-		}
-		else{
-			//do nothing
-		}
-	}
-	else if(ratio < 0 && ratioActual > 0){
-		ratio = 0;
-	}
-	else if(ratio > 0 && ratioActual < 0){
-		ratio = 0;
-	}
-
-
-
-	float ratioAbs = abs(ratio);
-	float ratioSign;
-	if(ratio >= 0){
-		ratioSign = 1;
-	}
-	else{
-		ratioSign = -1;
-	}
+	const float CurrentTooHigh = MaxCurrent + 0.2;
 
 	float current = motor->getMotorDriverCurrent();
-	/*float currentFiltered = current;
-
-	//find maximum current of last n measurements
-	unsigned char arrayLength = sizeof(motor->oldCurrent)/sizeof(motor->oldCurrent[0]);
-	for(unsigned char n=1; n<arrayLength; n++){
-		float currentTemp = motor->oldCurrent[n];
-		if(currentFiltered < currentTemp){
-			currentFiltered = currentTemp;
-		}
-		motor->oldCurrent[n-1] = currentTemp;
+	if(current < CurrentTooHigh){
+		motor->ratioActual = controlRatio(motor, current, MaxCurrent);
 	}
-	motor->oldCurrent[arrayLength-1] = current;*/
+	else{
+		//TODO: The current was too high, so log that event
+		motor->ratioActual = 0;
+	}
 
-	//float err = MaxCurrent - currentFiltered;
+	return motor->ratioActual;
+}
+
+static inline float controlRatio(Motor* motor, float current, const float MaxCurrent){
+	float ratio = limitRatioChange(motor);
+
+	float ratioAbs = abs(ratio);
+	float ratioSign = ratio >= 0 ? 1 : -1;
+
 	float err = MaxCurrent - current;
 	motor->controllerIntegralPart += gainI * err * samplingtime;
 	float ratioControlled = gainP * err + motor->controllerIntegralPart;
@@ -123,9 +82,48 @@ static inline float limitPwmRatio(Motor* motor){
 
 	motor->controllerIntegralPart = ratioControlled - gainP * err;
 
-	motor->ratioActual = ratioSign * ratioControlled;
+	return ratioSign * ratioControlled;
+}
 
-	return motor->ratioActual;
+static inline float limitRatioChange(Motor* motor){
+	const float MaxChange = 0.5;
+	float ratioLimited = motor->ratioSet;
+	float ratioActual = motor->ratioActual;
+
+	// Idea:
+	// - The change of the ratio is limited to prevent high currents.
+	// - A change towards zero can be as big as it wants, as it doesn't crate additional current.
+	// - All other changes are limited.
+	if(ratioLimited > 0 && ratioActual >= 0){
+		if(ratioLimited < ratioActual){
+			//do nothing
+		}
+		else if(ratioLimited > ratioActual + MaxChange){
+			ratioLimited = ratioActual + MaxChange;
+		}
+		else{
+			//do nothing
+		}
+	}
+	else if(ratioLimited < 0 && ratioActual <= 0){
+		if(ratioLimited > ratioActual){
+			//do nothing
+		}
+		else if(ratioLimited < ratioActual - MaxChange){
+			ratioLimited= ratioActual - MaxChange;
+		}
+		else{
+			//do nothing
+		}
+	}
+	else if(ratioLimited < 0 && ratioActual > 0){
+		ratioLimited = 0;
+	}
+	else if(ratioLimited > 0 && ratioActual < 0){
+		ratioLimited = 0;
+	}
+
+	return ratioLimited;
 }
 
 void setMotorPower_A(float ratio){
