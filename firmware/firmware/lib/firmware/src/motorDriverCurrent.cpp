@@ -5,12 +5,11 @@ static inline float readCurrent(uint8_t adcPin);
 static inline float countsToVolt(int adcCounts);
 static inline float voltToCurrent(float volt);
 
-float getMotorDriverCurrent_A(void){
-	return readCurrent(A0);
-}
+static float currentA, currentB;
 
-float getMotorDriverCurrent_B(void){
-	return readCurrent(A1);
+void motorDriverCurrentTick(void){
+	currentA = readCurrent(A0);
+	currentB = readCurrent(A1);
 }
 
 static inline float readCurrent(uint8_t adcPin){
@@ -28,4 +27,12 @@ static inline float voltToCurrent(float volt){
 	const float Amplification = 11.0f;
 	const float Rsens = 0.15f;
 	return volt / Amplification / Rsens;
+}
+
+float getMotorDriverCurrent_A(void){
+	return currentA;
+}
+
+float getMotorDriverCurrent_B(void){
+	return currentB;
 }
