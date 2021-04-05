@@ -15,6 +15,8 @@ def main():
         print("more than one Arduino found!")
         return
 
+    print("Arduino found!")
+
     mySerial = serial.Serial(None)
     mySerial.timeout = 0
     mySerial.port = arduinos[0].device_node
@@ -50,11 +52,11 @@ def main():
         axesName = "ABS_Y"
         if axesName in controlPad.axes:
             #print(axesName + ": " + str(controlPad.axes[axesName]))
-            mySerial.write(("setMotorA " + str(controlPad.axes[axesName]) + "\r").encode())
+            mySerial.write(("speedA " + str(5*controlPad.axes[axesName]) + "\r").encode())
         axesName = "ABS_RY"
         if axesName in controlPad.axes:
             #print(axesName + ": " + str(controlPad.axes[axesName]))
-            mySerial.write(("setMotorB " + str(controlPad.axes[axesName]) + "\r").encode())
+            mySerial.write(("speedB " + str(5*controlPad.axes[axesName]) + "\r").encode())
         #print("")
 
 if __name__ == "__main__":
