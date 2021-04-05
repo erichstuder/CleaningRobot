@@ -2,34 +2,48 @@
 #include <Arduino.h>
 #include "quadratureEncoder.h"
 
-static unsigned long oldCounts_1;
-static unsigned long oldCounts_2;
+//TODO diesen Datentyp in Motor umbenennen (namespace, class, ...)
+typedef struct{
+	unsigned long (*getCounts)(void);
+	unsigned long oldCounts;
+	float radPerSecond;
+} MotorAngularSpeed;
 
-static inline float calculateAngularSpeed(unsigned long counts, unsigned long oldCounts, float deltaTime);
+static inline void calculateAngularSpeed(MotorAngularSpeed* motor);
 
-void initMotorAngularSpeed(void){
-	oldCounts_1 = quadratureEncoder_getCounts_1();
-	oldCounts_2 = quadratureEncoder_getCounts_2();
+static MotorAngularSpeed motor_1, motor_2;
+static float samplingtime;
+
+void initMotorAngularSpeed(float samplingtimeSeconds){
+	samplingtime = samplingtimeSeconds;
+
+	quadratureEncoder_init();
+
+	motor_1.getCounts = quadratureEncoder_getCounts_1;
+	motor_1.oldCounts = motor_1.getCounts();
+	motor_1.radPerSecond = 1;
+
+	motor_2.getCounts = quadratureEncoder_getCounts_2;
+	motor_2.oldCounts = motor_2.getCounts();
+	motor_2.radPerSecond = 0;
 }
 
-float getMotorAngularSpeed_1(float deltaTime){
-	unsigned long counts = quadratureEncoder_getCounts_1();
-	float angularSpeed = calculateAngularSpeed(counts, oldCounts_1,  deltaTime);
-	oldCounts_1 = counts;
-	return angularSpeed;
+void motorAngularSpeedTick(void){
+	calculateAngularSpeed(&motor_1);
+	calculateAngularSpeed(&motor_2);
 }
 
-float getMotorAngularSpeed_2(float deltaTime){
-	unsigned long counts = quadratureEncoder_getCounts_2();
-	float angularSpeed = calculateAngularSpeed(counts, oldCounts_2, deltaTime);
-	oldCounts_2 = counts;
-	return angularSpeed;
+float getMotorAngularSpeed_1(void){
+	return motor_1.radPerSecond;
 }
 
-static inline float calculateAngularSpeed(unsigned long counts, unsigned long oldCounts, float deltaTime){
-	float deltaCounts = (float)((long)(counts - oldCounts));
-	float radPerSecond = deltaCounts / (float)quadratureEncoder_getCountsPerRevolution() * (float)TWO_PI / deltaTime;
-	return radPerSecond;
+float getMotorAngularSpeed_2(void){
+	return motor_2.radPerSecond;
 }
 
-
+static inline void calculateAngularSpeed(MotorAngularSpeed* motor){
+	unsigned long counts = motor->getCounts();
+	float deltaCounts = (float)((long)(counts - motor->oldCounts));
+	motor->oldCounts = counts;
+	motor->radPerSecond= deltaCounts / (float)quadratureEncoder_getCountsPerRevolution() * (float)TWO_PI / samplingtime;
+}

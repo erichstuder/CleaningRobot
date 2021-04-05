@@ -4,18 +4,18 @@
 
 typedef void (*InterruptCallback)(void);
 
-typedef struct Buffer{
+typedef struct{
 	bool isDataValid;
 	bool isLockedByReader;
 	unsigned long counts;
-};
+} Buffer;
 
 typedef enum{
 	A,
 	B,
 } ActiveWriteBuffer;
 
-typedef struct Encoder{
+typedef struct {
 	Buffer bufferA;
 	Buffer bufferB;
 	ActiveWriteBuffer activeWriteBuffer;
@@ -27,7 +27,7 @@ typedef struct Encoder{
 	InterruptCallback A_risingClb;
 	InterruptCallback B_fallingClb;
 	InterruptCallback B_risingClb;
-};
+} Encoder;
 
 static Encoder encoder_1;
 static Encoder encoder_2;
@@ -190,13 +190,13 @@ static inline void switchToBufferA(Encoder* encoder){
 	encoder->bufferA.counts = encoder->bufferB.counts;
 	encoder->activeWriteBuffer = A;
 	encoder->bufferA.isDataValid = true;
-	encoder->bufferB.isDataValid == false;
+	encoder->bufferB.isDataValid = false;
 }
 
 static inline void switchToBufferB(Encoder* encoder){
 	encoder->bufferB.counts = encoder->bufferA.counts;
 	encoder->activeWriteBuffer = B;
-	encoder->bufferA.isDataValid == false;
+	encoder->bufferA.isDataValid = false;
 	encoder->bufferB.isDataValid = true;
 }
 

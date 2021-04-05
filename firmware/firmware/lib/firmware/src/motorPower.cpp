@@ -41,6 +41,8 @@ void initMotorPower(float samplingtimeSeconds){
 }
 
 void motorPowerTick(void){
+	motorDriverCurrentTick();
+
 	float ratioLimited = limitPwmRatio(&motorA);
 	setMotorInterface_ratioA(ratioLimited);
 
