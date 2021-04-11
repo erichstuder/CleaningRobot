@@ -46,6 +46,9 @@ def main():
 
 		time.sleep(0.2)
 
+		#clear input buffer to prevent crash
+		mySerial.reset_input_buffer()
+
 		controlPad.poll()
 		#print(controlPad)
 		axesName = "ABS_Y"
