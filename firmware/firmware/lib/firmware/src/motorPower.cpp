@@ -81,13 +81,13 @@ static inline float controlRatio(Motor* motor, float current, const float MaxCur
 	ratioControlled = min(ratioControlled, 1);
 	ratioControlled = max(ratioControlled, 0);
 
-	motor->controllerIntegralPart = ratioControlled - gainP * err;
+	motor->controllerIntegralPart = min(motor->controllerIntegralPart, 1);
 
 	return ratioSign * ratioControlled;
 }
 
 static inline float limitRatioChange(Motor* motor){
-	const float MaxChange = 0.5;
+	const float MaxChange = 0.1;
 	float ratioLimited = motor->ratioSet;
 	float ratioActual = motor->ratioActual;
 
