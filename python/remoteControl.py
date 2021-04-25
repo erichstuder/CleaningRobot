@@ -54,11 +54,11 @@ def main():
 		axesName = "ABS_Y"
 		if axesName in controlPad.axes:
 			#print(axesName + ": " + str(controlPad.axes[axesName]))
-			mySerial.write(("speedA " + str(5*controlPad.axes[axesName]) + "\r").encode())
+			mySerial.write(("speedA " + str(15*controlPad.axes[axesName]) + "\r").encode())
 		axesName = "ABS_RY"
 		if axesName in controlPad.axes:
 			#print(axesName + ": " + str(controlPad.axes[axesName]))
-			mySerial.write(("speedB " + str(5*controlPad.axes[axesName]) + "\r").encode())
+			mySerial.write(("speedB " + str(15*controlPad.axes[axesName]) + "\r").encode())
 			#print(text)
 		#print("")
 
