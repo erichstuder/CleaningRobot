@@ -51,10 +51,9 @@ void motorPowerTick(void){
 }
 
 static inline float limitPwmRatio(Motor* motor){
-	//The actual 9V powersupply has 0.8A maximum output current.
-	//This results in 0.4A maximum current per motor.
-	const float MaxCurrent = 0.4;
-	const float CurrentTooHigh = MaxCurrent + 0.2;
+	//The motor driver current must not exceed 2A.
+	const float MaxCurrent = 1.5;
+	const float CurrentTooHigh = 2;
 
 	float current = motor->getMotorDriverCurrent();
 	if(current < CurrentTooHigh){
