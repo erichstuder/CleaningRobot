@@ -8,6 +8,12 @@ static inline unsigned long getMicros(void);
 
 static ItSignal_t itSignals[] = {
 	{
+		"p",
+		ItValueType_Float,
+		(void (*)(void)) getSpeedController_gainP,
+		(void (*)(void)) setSpeedController_gainP
+	},
+	{
 		"i",
 		ItValueType_Float,
 		(void (*)(void)) getSpeedController_gainI,

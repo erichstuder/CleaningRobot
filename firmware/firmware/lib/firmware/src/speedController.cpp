@@ -13,7 +13,8 @@ typedef struct {
 static inline void controlSpeed(MotorSpeedControlled* motor);
 
 static MotorSpeedControlled motorA, motorB;
-static float gainI = 0.1;
+static float gainP = 0.2;
+static float gainI = 0.3;
 static float samplingtime;
 
 void initSpeedController(float samplingtimeSeconds){
@@ -42,14 +43,17 @@ void speedControllerTick(void){
 
 static inline void controlSpeed(MotorSpeedControlled* motor){
 	float error = motor->angularSpeedSet - motor->getAngularSpeed();
-	float ratio = motor->controllerIntegralPart;
-	
-	ratio += gainI * error * samplingtime;
+
+	float iPart = motor->controllerIntegralPart + gainI * error * samplingtime;
+
+	float ratio = iPart + gainP * error;
 	ratio = min(ratio, 1);
 	ratio = max(ratio, -1);
 
+	iPart = min(iPart, 1);
+	iPart = max(iPart, -1);
+	motor->controllerIntegralPart = iPart;
 
-	motor->controllerIntegralPart = ratio;
 	motor->setMotorPower(ratio);
 }
 
@@ -59,6 +63,14 @@ void setAngularSpeed_A(float value){
 
 void setAngularSpeed_B(float value){
 	motorB.angularSpeedSet = value;
+}
+
+void setSpeedController_gainP(float value){
+	gainP = value;
+}
+
+float getSpeedController_gainP(void){
+	return gainP;
 }
 
 void setSpeedController_gainI(float value){
