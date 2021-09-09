@@ -1,6 +1,0 @@
-[submodule "firmware/firmware/src/IT_Server"]
-	path = firmware/firmware/lib/IT_Server
-	url = https://github.com/erichstuder/IT_Server.git
-[submodule "firmware/IT_Client"]
-	path = firmware/IT_Client
-	url = https://github.com/erichstuder/IT_Client.git
