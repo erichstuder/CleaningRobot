@@ -1,3 +1,5 @@
+#if 1 == 2  //code hidden as it gives compiler errors and is not used at the moment
+
 #include <SD.h>
 
 static void log(String text);
@@ -51,3 +53,5 @@ static void initLog(void){
 	logBuffer.reserve(LogBufferSize);
 	isInitialized = true;
 }
+
+#endif
